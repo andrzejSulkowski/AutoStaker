@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Staker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <div class="header-section">
+                    Cosmos Hub
+                </div>
+            </div>
+            <div class="inner-container">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="container-account">
+                            <div class="container-account-inner">
+                                <input class ="address" type="text" placeholder="address" name="address" id="address" value="cosmos1ngc94p5acs8gy2m5pgmu4gdrt3mvzx4qecvl57">
+                                <button id="watch-address-btn" class="button btn-outline-primary">Watch</button>
+                            </div>
+                        <div class="container-asset">
+
+
+                            <div class="claiming-status">
+                                <div class="status-wait collapsed">
+                                    <div class="estimated-countdown">-</div>
+                                </div>
+                            </div>
+                            <div class="claiming-status-text">
+                                APY: ~18.95%
+                            </div>
+
+
+
+                            <ul class="assets">
+                                <li id="asset-available" class="border-bottom"> 
+                                    <div>Available</div> 
+                                    <div>-</div>
+                                </li>
+                                <li id="asset-staked" class="border-bottom"> 
+                                    <div>Staked</div>
+                                    <div>-</div>
+                                </li>
+                                <li id="asset-pending-reward" class="border-bottom"> 
+                                    <div>Pending Reward</div>
+                                    <div>-</div>
+                                </li>
+                            </ul>
+                        </div>
+                            <div class="container-tx-button">
+                                <button type="button" class="button btn-outline-primary" id="claim-btn">Claim</button>
+                                <div class="space"></div>
+                                <button type="button" class="button btn-outline-primary" id="stake-btn">Stake</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script type="module" src="apiQuerys.js"></script>
+    <script type="module" src="popup.js"></script>
+    <script type="module" src="inject.js"></script>
+</body>
+</html>
+
+<!--
+    Claim & Stake
+                                <div class="claiming-status">
+                                <div class="status-wait">
+                                    <div class="status-claim-stake-symbol"></div>
+                                </div>
+                            </div>
+                            <div class="claiming-status-text">
+                                Claim and Stake
+                            </div>
+    Wait
+
+-->
