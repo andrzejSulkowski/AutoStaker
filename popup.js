@@ -1,13 +1,13 @@
 
 import { api } from "./apiQuerys.js";
 import { Account } from "./account.js"
-
+import { Timer } from "./timer.js"
 
 let account = undefined
+let timer = undefined
 chrome.storage.sync.get(['account'], function(result) {
   result.account
   account = result.account
-  console.log(result.account)
   displayAccount(result.account)
 });
 
@@ -45,27 +45,28 @@ function initEventListener(){
       .then(() => {
         console.log("account build")
         setStoredAccount(account)
-
-        htmlSelector.balances.availableBalance.innerHTML = coinConverter(account.available, 4) + " ATOM"
-        htmlSelector.balances.stakedBalance.innerHTML = coinConverter(account.staked, 4) + " ATOM"
-        htmlSelector.balances.pendingRewardBalance.innerHTML = coinConverter(account.pendingStakingReward, 4) + " ATOM"
+        displayBalances(account)
       
         getApr(account.validators[0])
           .then((apr) => {
 
             let hoursObject = getMaxCapital(account.staked, fee.low, parseFloat(apr))
-            let hoursInTokens = account.staked * hoursObject.interval * parseFloat(apr) / (365*24)
+            let futureDate = new Date(Date.now() + hoursObject.interval * 60 * 60 * 1000)
+            console.log(futureDate)
+            timer = new Timer(new Date(), futureDate, htmlSelector.timeToWait)
+            let hoursInTokens = timer.getDifferenceInToken(account.staked, apr)
 
             if(hoursInTokens >= account.pendingStakingReward){
-              // Wait
+              
+              // Start Countdown
               let tokenDiff = hoursInTokens - account.pendingStakingReward
               let hoursDiff = tokenDiff / ((parseFloat (apr) * account.staked) / (365 * 24))
               console.log("Real Hours Difference: " + hoursDiff)
-              startTime(new Date().getTime() + hoursDiff*60*60*1000)
+              timer.start()
 
             }else{
               // Claim
-              stopTimer(timingInterval)
+              timer.stop()
               displayClaimAndStake()
             }
             
@@ -196,40 +197,6 @@ return stake * (apy*n/365/24) - fee
 
 
 
-
-
-
-
-
-// API CALLS
-async function getAvailableBalance(address, denom){
-  return await api.bank.getBalance(address, denom)
-}
-async function getPendingRewardBalance(address, denom){
-  return await api.staking.getAllPendingStakingRewards(address)
-    .then((data) => {
-      for (const totalBalance of data.total) {
-        if(totalBalance.denom === denom){
-          return totalBalance.amount
-        }
-      }
-      return 0
-    })
-}
-async function getStakedBalance(address, denom){
-  return await api.staking.getAllDelegations(address)
-    .then((delegations) => {
-      for (const delegation of delegations) {
-        if(delegation.balance.denom === denom){
-          return delegation.balance.amount
-        }
-      }
-      return 0
-    })
-}
-
-
-
 // helper functions
 function coinConverter(x, decimals){
   return (x / Math.pow(10,6)).toFixed(decimals)
@@ -253,44 +220,16 @@ function setStoredAccount(account){
 
 chrome.runtime.sendMessage({ cmd: 'GET_TIME' }, response => {
   if (response.time) {
-    const time = new Date(response.time);
-    startTimer(time)
+    const toDate = new Date(response.time);
+    timer = new Timer(new Date(), toDate, htmlSelector.timeToWait)
+    timer.start()
   }
 });
 
 
 let timingInterval = undefined
 
-function myTimer(deadline){
 
-  var distance = deadline - new Date().getTime()
-  if(distance < 0){
-    stopTimer(timingInterval)
-  }
-  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-  displayCountdown(days,hours,minutes,seconds)
-}
 
-function startTimer(time) {
 
-  var distance = time - new Date().getTime()
-  console.log(distance)
-  stopTimer(timingInterval)
-  if (distance > 0) {
-    timingInterval = setInterval(myTimer, 1000, time)
-  }else{
-    chrome.runtime.sendMessage({ cmd: 'TIME_IS_UP' });
-  }
-}
-function stopTimer(interval){
-  clearInterval(interval)
-}
-
-function startTime(time) {
-  chrome.runtime.sendMessage({ cmd: 'START_TIMER', when: time });
-  startTimer(time);
-}
 
